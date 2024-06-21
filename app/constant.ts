@@ -131,9 +131,9 @@ export const KnowledgeCutOffDate: Record<string, string> = {
   default: "2021-09",
   "gpt-4-turbo": "2023-12",
   "gpt-4-turbo-2024-04-09": "2023-12",
-  "gpt-4o-2024-05-13": "2023-12",
   "gpt-4-turbo-preview": "2023-12",
   "gpt-4o": "2023-10",
+  "gpt-4o-2024-05-13": "2023-10",
   "gpt-4-vision-preview": "2023-04",
   // After improvements,
   // it's now easier to add "KnowledgeCutOffDate" instead of stupid hardcoding it, as was done previously.
@@ -172,14 +172,6 @@ const openaiModels = [
   "gpt-4o-2024-05-13",
   "gpt-4-vision-preview",
   "gpt-4-turbo-2024-04-09",
-  "gpt-4o-2024-05-13",
-  "claude-2.0",
-  "claude-2.1",
-  "claude-3-sonnet-20240229",
-  "claude-3-opus-20240229",
-  "claude-3-haiku-20240307",
-  "gemini-1.5-pro-latest",
-  "gemini-pro-vision",
 ];
 
 const googleModels = [
@@ -191,6 +183,11 @@ const googleModels = [
 
 const anthropicModels = [
   "claude-instant-1.2",
+  "claude-2.0",
+  "claude-2.1",
+  "claude-3-sonnet-20240229",
+  "claude-3-opus-20240229",
+  "claude-3-haiku-20240307",
 ];
 
 export const DEFAULT_MODELS = [
