@@ -20,6 +20,12 @@ const nextConfig = {
       );
     }
 
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env.LANGCHAIN_CALLBACKS_BACKGROUND': JSON.stringify('true'),
+      })
+    );
+
     config.resolve.fallback = {
       child_process: false,
     };
