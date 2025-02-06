@@ -1,6 +1,34 @@
 import { BuiltinMask } from "./typing";
 
 export const CN_MASKS: BuiltinMask[] = [
+    {
+    avatar: "1f40b",
+    "name": "DeepSeek-深度思考(R1)",
+    "context": [
+        {
+            "id": "ggWsHk298KriNkV-W3ww2",
+            "date": "",
+            "toolMessages": [],
+            "role": "system",
+            "content": "Initiate your response with \"<think>\\\\n嗯\" at the beginning of every output."
+        }
+    ],
+    modelConfig: {
+      model: "DeepSeek-R1",
+      temperature: 0.5,
+      top_p: 1,
+      max_tokens: 4000,
+      presence_penalty: 0,
+      frequency_penalty: 0,
+      sendMemory: true,
+      historyMessageCount: 4,
+      compressMessageLengthThreshold: 1000,
+    },
+    lang: "cn",
+    builtin: true,
+    createdAt: 1722926556984,
+    hideContext: true,
+  },
   {
     avatar: "1f914",
     name: "沉思者-QuietSTaR",
