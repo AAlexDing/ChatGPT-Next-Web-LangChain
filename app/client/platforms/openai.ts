@@ -279,7 +279,7 @@ export class ChatGPTApi implements LLMApi {
       if (isDeepseekReasoner) {
         requestPayload.max_tokens = Math.max(modelConfig.max_tokens, 8192);
       }
-      
+    }
     console.log("[Request] openai payload: ", requestPayload);
 
     const shouldStream = !isDalle3 && !!options.config.stream && !isO1;
