@@ -388,7 +388,7 @@ export class ChatGPTApi implements LLMApi {
                 runTools[index]["function"]["arguments"] += args;
               }
             }
-            return choices[0]?.delta?.content;
+            return choices[0]?.delta?.content ?? undefined; 
           },
           // processToolMessage, include tool_calls message and tool call results
           (
