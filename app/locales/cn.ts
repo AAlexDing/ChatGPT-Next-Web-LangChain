@@ -715,6 +715,8 @@ const cn = {
     Title: "挑选一个面具",
     SubTitle: "现在开始，与面具背后的灵魂思维碰撞",
     More: "查看全部",
+    Less: "折叠代码",
+    Think: "思考过程",
   },
 
   URLCommand: {

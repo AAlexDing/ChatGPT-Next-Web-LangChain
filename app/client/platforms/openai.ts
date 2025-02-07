@@ -63,11 +63,12 @@ export interface RequestPayload {
   }[];
   stream?: boolean;
   model: string;
-  temperature: number;
-  presence_penalty: number;
-  frequency_penalty: number;
-  top_p: number;
+  temperature?: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
+  top_p?: number;
   max_tokens?: number;
+  max_completion_tokens?: number;
 }
 
 export interface DalleRequestPayload {
@@ -219,6 +220,9 @@ export class ChatGPTApi implements LLMApi {
 
     const isDalle3 = _isDalle3(options.config.model);
     const isO1 = options.config.model.startsWith("o1");
+    const isDeepseekReasoner =
+      options.config.model.includes("deepseek-reasoner") ||
+      options.config.model.includes("DeepSeek-R1");
     if (isDalle3) {
       const prompt = getMessageTextContent(
         options.messages.slice(-1)?.pop() as any,
@@ -249,20 +253,33 @@ export class ChatGPTApi implements LLMApi {
         messages,
         stream: !isO1 ? options.config.stream : false,
         model: modelConfig.model,
-        temperature: !isO1 ? modelConfig.temperature : 1,
-        presence_penalty: !isO1 ? modelConfig.presence_penalty : 0,
-        frequency_penalty: !isO1 ? modelConfig.frequency_penalty : 0,
-        top_p: !isO1 ? modelConfig.top_p : 1,
-        // max_tokens: Math.max(modelConfig.max_tokens, 1024),
-        // Please do not ask me why not send max_tokens, no reason, this param is just shit, I dont want to explain anymore.
       };
+
+      if (!isDeepseekReasoner) {
+        requestPayload.temperature = !isO1 ? modelConfig.temperature : 1;
+        requestPayload.top_p = !isO1 ? modelConfig.top_p : 1;
+      }
+
+      if (!isDeepseekReasoner) {
+        requestPayload.presence_penalty = modelConfig.presence_penalty;
+        requestPayload.frequency_penalty = modelConfig.frequency_penalty;
+        
+        if (isO1) {
+          requestPayload.presence_penalty = 0;
+          requestPayload.frequency_penalty = 0;
+          requestPayload.max_completion_tokens = modelConfig.max_tokens;
+        }
+      }
 
       // add max_tokens to vision model
       if (visionModel) {
-        requestPayload["max_tokens"] = Math.max(modelConfig.max_tokens, 4000);
+        requestPayload.max_tokens = Math.max(modelConfig.max_tokens, 4000);
       }
-    }
 
+      if (isDeepseekReasoner) {
+        requestPayload.max_tokens = Math.max(modelConfig.max_tokens, 8192);
+      }
+      
     console.log("[Request] openai payload: ", requestPayload);
 
     const shouldStream = !isDalle3 && !!options.config.stream && !isO1;
@@ -302,6 +319,10 @@ export class ChatGPTApi implements LLMApi {
         );
       }
       if (shouldStream) {
+        let responseText = "";
+        let remainText = "";
+        let finished = false;
+        let isInThinking = false;
         // const [tools, funcs] = usePluginStore
         //   .getState()
         //   .getAsTools(
@@ -323,11 +344,32 @@ export class ChatGPTApi implements LLMApi {
             const json = JSON.parse(text);
             const choices = json.choices as Array<{
               delta: {
-                content: string;
+                content: string | null;
+                reasoning_content: string | null;
                 tool_calls: ChatMessageTool[];
               };
             }>;
+            const reasoning = choices[0]?.delta?.reasoning_content;
+            const content = choices[0]?.delta?.content;
             const tool_calls = choices[0]?.delta?.tool_calls;
+            
+
+            if (reasoning && reasoning.length > 0) {
+              if (!isInThinking) {
+                remainText += "<think>\n" + reasoning;
+              } else {
+                remainText += reasoning;
+              }
+              isInThinking = true;
+            } else if (content && content.length > 0) {
+              if (isInThinking) {
+                isInThinking = false;
+                remainText += "\n</think>\n\n" + content;
+              } else {
+                remainText += content;
+              }
+            }
+
             if (tool_calls?.length > 0) {
               const index = tool_calls[0]?.index;
               const id = tool_calls[0]?.id;

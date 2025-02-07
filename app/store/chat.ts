@@ -1,5 +1,6 @@
 import {
   getMessageTextContent,
+  getMessageTextContentWithoutThinking,
   isFunctionCallModel,
   trimTopic,
 } from "../utils";
@@ -770,7 +771,14 @@ export const useChatStore = createPersistStore(
                 role: "user",
                 content: Locale.Store.Prompt.Topic,
               }),
-            );
+            )
+            .map((v) => ({
+              ...v,
+              content:
+                v.role === "assistant"
+                  ? getMessageTextContentWithoutThinking(v)
+                  : getMessageTextContent(v),
+            }));
           api.llm.chat({
             messages: topicMessages,
             config: {
@@ -831,13 +839,21 @@ export const useChatStore = createPersistStore(
            **/
           const { max_tokens, ...modelcfg } = modelConfig;
           api.llm.chat({
-            messages: toBeSummarizedMsgs.concat(
-              createMessage({
-                role: "system",
-                content: Locale.Store.Prompt.Summarize,
-                date: "",
-              }),
-            ),
+            messages: toBeSummarizedMsgs
+              .concat(
+                createMessage({
+                  role: "user",
+                  content: Locale.Store.Prompt.Summarize,
+                  date: "",
+                }),
+              )
+              .map((v) => ({
+                ...v,
+                content:
+                  v.role === "assistant"
+                    ? getMessageTextContentWithoutThinking(v)
+                    : getMessageTextContent(v),
+              })),
             config: {
               ...modelcfg,
               stream: true,
